@@ -985,40 +985,7 @@ get_p_notify_body(str pres_uri, pres_ev_t *event, str *etag, str *publ_body, str
      lock_release(&pres_htable[hash_code].lock);
      */
 //	if( !etag && p== NULL){
-    if (!etag && !found_in_cache) {
-        //LM_DBG("No record exists in hash_table\n");
-        if (!fallback2db) {
-            /* for pidf manipulation && dialog-presence mixing */
-            if (event->agg_nbody) {
-                /* broken - it will not work with pidf manipulation */
-                if (body_cnt == 0 && (mix_dialog_presence || notify_offline_body) &&
-                    event->evp->parsed == EVENT_PRESENCE) {
-                    local_dialog_body = build_offline_presence(&pres_uri);
-                    if (local_dialog_body == NULL) {
-                        LM_ERR("Failed to build offline presence body\n");
-                        goto error;
-                    }
-                    dialog_body = local_dialog_body;
-                    body_array = &dialog_body; /* only for the case no other presence info is found */
-                    body_cnt = 1;
-                }
-                notify_body = event->agg_nbody(&uri.user, &uri.host, body_array, body_cnt, -1);
-                if (notify_body)
-                    goto done;
-            }
-            if (event->build_empty_pres_info) {
-                notify_body = event->build_empty_pres_info(&pres_uri, extra_hdrs);
-                if (notify_body == NULL && event->mandatory_body) {
-                    LM_ERR("Failed to construct body\n");
-                    return NULL;
-                }
-                if (notify_body)
-                    //--LM_DBG("Built empty pres info %p\n", notify_body->s);
-                    goto done;
-            }
-            return NULL;
-        }
-    }
+
     if (!found_in_cache) {
         //LM_DBG("Searching in DB.\n");
         result = pres_search_db(&uri, &event->name, &body_col, &extra_hdrs_col, &expires_col, &etag_col);
@@ -1076,7 +1043,7 @@ get_p_notify_body(str pres_uri, pres_ev_t *event, str *etag, str *publ_body, str
         n = result->n;
 
         if (event->agg_nbody == NULL) {
-            //LM_DBG("Event does not require aggregation\n");
+            LM_DBG("Event does not require aggregation\n");
             row = &result->rows[n - 1];
             row_vals = ROW_VALUES(row);
 
@@ -1215,7 +1182,7 @@ get_p_notify_body(str pres_uri, pres_ev_t *event, str *etag, str *publ_body, str
         }
 
         free_result(result);
-//		result= NULL;
+		result= NULL;
 
         /* put the dialog info extracted body if present */
         if (dialog_body) {
@@ -1718,12 +1685,11 @@ int publ_notify(presentity_t *p, str pres_uri, str *body, str *offline_etag, str
         goto done;
     }
 
-    /* if the event does not require aggregation - we have the final body */
-/*	if (p->event->agg_nbody) {
+    //if (p->event->agg_nbody) Aggregrate body.
 		notify_body = get_p_notify_body(pres_uri, p->event, offline_etag, body,
 		NULL, dialog_body, p->extra_hdrs ? p->extra_hdrs : &notify_extra_hdrs,
 				&free_fct, from_publish);
-	}*/
+
 
     s = subs_array;
     while (s) {

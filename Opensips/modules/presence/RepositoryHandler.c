@@ -39,7 +39,7 @@ int updateResource(const db_key_t *_qk, const db_val_t *_qv,
             LM_ERR("Required parameters _rt not received.\n");
         return -1;
     }
-    char *jsonBuffer = (char *) pkg_malloc(JSON_BUF_LEN);
+    char *jsonBuffer = (char *) malloc(JSON_BUF_LEN);
     if (jsonBuffer == NULL) {
         LM_ERR("No more pkg memory left");
         return -1;
@@ -49,7 +49,7 @@ int updateResource(const db_key_t *_qk, const db_val_t *_qv,
 
     if (!status) {
         LM_ERR("Unable to process the requested input");
-        pkg_free(jsonBuffer);
+        free(jsonBuffer);
         return -1;
     }
 
@@ -62,7 +62,7 @@ int updateResource(const db_key_t *_qk, const db_val_t *_qv,
     //update_request=1;
     if (create_url(_qk, _qv, _qn, url, _rt, _u1, _u2, NULL, 0) < 0) {
         LM_ERR("Unable to create complete URL\n");
-        pkg_free(url);
+    //    pkg_free(url);
         return -1;
     }
     //update_request=0;
@@ -85,7 +85,7 @@ int updateResource(const db_key_t *_qk, const db_val_t *_qv,
         LM_DBG("PUT to %s failed. \n", url);*/
 
     //pkg_free(url);
-    pkg_free(jsonBuffer);
+    free(jsonBuffer);
     //LM_DBG("Returning.");
     return ((status == 200 || status == 204) ? 1 : 0);
 }
@@ -95,7 +95,7 @@ int insertResource(const db_key_t *_k, const db_val_t *_v, const int _n,
 
     if ((!_k) || (!_v) || (!_n) || (!_rt))
         return -1;
-    char *jsonBuffer = (char *) pkg_malloc(JSON_BUF_LEN);
+    char *jsonBuffer = (char *) malloc(JSON_BUF_LEN);
     if (jsonBuffer == NULL) {
         LM_ERR("No more pkg memory left");
         return -1;
@@ -105,7 +105,7 @@ int insertResource(const db_key_t *_k, const db_val_t *_v, const int _n,
 
     if (!status) {
         LM_ERR("Unable to process the requested input");
-        pkg_free(jsonBuffer);
+        free(jsonBuffer);
         return -1;
     }
 
@@ -161,7 +161,7 @@ int insertResource(const db_key_t *_k, const db_val_t *_v, const int _n,
             LM_DBG("POST to %s failed. \n", url);*/
     }
     //pkg_free(url);
-    pkg_free(jsonBuffer);
+    free(jsonBuffer);
     return ((status == 201 || status == 200) ? 1 : 0);
 }
 
@@ -183,7 +183,7 @@ int getResource(const db_key_t *_k, const db_val_t *_v, const int _n,
     char url[MAX_URL_LEN];
     if (create_url(_k, _v, _n, url, _rt, _u1, _u2, _kr, _nr) < 0) {
         LM_ERR("Failed to process request. URL creation failed.\n");
-        pkg_free(url);
+        //pkg_free(url);
         return -1;
     }
    // LM_DBG("!!!!!%s", url);
@@ -249,7 +249,8 @@ int checkResource(const db_key_t *_k, const db_val_t *_v, const int _n,
         LM_ERR("Required values not provided.\n");
         return -1;
     }
-    char *url = (char *) pkg_malloc(MAX_URL_LEN);
+    //char *url = (char *) pkg_malloc(MAX_URL_LEN);
+    char url[MAX_URL_LEN];
     if (url == NULL) {
         LM_ERR("No more pkg memory left");
         return -1;
@@ -258,7 +259,7 @@ int checkResource(const db_key_t *_k, const db_val_t *_v, const int _n,
         LM_ERR(
                 "Failed to process request. URL creation failed. Resource is: %s\n",
                 _p);
-        pkg_free(url);
+        //pkg_free(url);
         return -1;
     }
     int status = 0;
@@ -278,7 +279,7 @@ int checkResource(const db_key_t *_k, const db_val_t *_v, const int _n,
         LM_DBG("HEAD for %s successful with status %d. \n", url, status);
     else
         LM_DBG("HEAD for %s failed with status %d. \n", url, status);
-    pkg_free(url);
+    //pkg_free(url);
     return (status != 200 ? 0 : 1);
 }
 
@@ -289,7 +290,8 @@ int deleteResource(const db_key_t *_k, const db_val_t *_v, const int _n,
         LM_ERR("Required values not provided.\n");
         return -1;
     }
-    char *url = (char *) pkg_malloc(MAX_URL_LEN);
+    //char *url = (char *) pkg_malloc(MAX_URL_LEN);
+    char url[MAX_URL_LEN];
     if (url == NULL) {
         LM_ERR("No more pkg memory left");
         return -1;
@@ -297,7 +299,7 @@ int deleteResource(const db_key_t *_k, const db_val_t *_v, const int _n,
    // delete_request = 1;
     if (create_url(_k, _v, _n, url, _rt, _u1, _u2, NULL, 0) < 0) {
         LM_ERR("Failed to process request. URL creation failed.\n");
-        pkg_free(url);
+        //pkg_free(url);
         return -1;
     }
    // delete_request = 0;
@@ -318,7 +320,7 @@ int deleteResource(const db_key_t *_k, const db_val_t *_v, const int _n,
         LM_DBG("DELETE for %s successful with status %d. \n", url, status);
     else
         LM_DBG("DELETE for %s failed with status %d. \n", url, status);
-    pkg_free(url);
+    //pkg_free(url);
     return ((status == 200 || status == 204) ? 1 : 0);
 }
 /*

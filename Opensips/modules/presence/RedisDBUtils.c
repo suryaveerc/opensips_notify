@@ -351,7 +351,7 @@ int checkPresentityInCache(char *pres_cache_key, char *pres_cache_value,
             //		LM_DBG("In checkPresentityInCache, Count: %d\n", count);
             if (count > 0) {
 
-                *listOfPublish = pkg_malloc(1 + count * sizeof(char *));
+                *listOfPublish = malloc(1 + count * sizeof(char *));
                 if (*listOfPublish == NULL) {
                     LM_ERR("NO more pkg memory left.\n");
                     return -1;
@@ -363,7 +363,7 @@ int checkPresentityInCache(char *pres_cache_key, char *pres_cache_value,
             //LM_DBG("In checkPresentityInCache 4\n");
             for (i = 0; i < reply->elements; i++) {
 //				LM_DBG("Result: %s\n", reply->element[i]->str);
-                (*listOfPublish)[i] = pkg_malloc(
+                (*listOfPublish)[i] = malloc(
                         strlen(reply->element[i]->str) * sizeof(char) + 1);
                 if ((*listOfPublish)[i] == NULL) {
                     LM_ERR("NO more pkg memory left.\n");
@@ -498,7 +498,7 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col,
         redisAppendCommand(redis_context, "HGETALL %s", listOfPublish[i]);
         //LM_INFO("Redis set counter: %d", ++redisCounter);
     }
-    *result = pkg_malloc(sizeof(db_res_t));
+    *result = malloc(sizeof(db_res_t));
 
     if (!result) {
         LM_ERR("No more memory to assign to result.");
@@ -509,7 +509,7 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col,
     }
 
     (*result)->n = publish_count;
-    (*result)->rows = pkg_malloc(sizeof(db_row_t) * publish_count);
+    (*result)->rows = malloc(sizeof(db_row_t) * publish_count);
 
     if (!(*result)->rows) {
         LM_ERR("No more memory to assign to (*result)->rows.");
@@ -538,7 +538,7 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col,
             temp++;
             //LM_DBG("%s\n", temp); //fetched etag from the key.
             (*result)->rows[i].n = 4; //actual returned will be 2 or 1 but this is done to match the expected result in the calling function. Work around!!
-            (*result)->rows[i].values = pkg_malloc(sizeof(db_val_t) * 4);
+            (*result)->rows[i].values = malloc(sizeof(db_val_t) * 4);
 
             // 0- etag, 1-expires, 2-body, 3-extra_hdrs
 
@@ -592,8 +592,8 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col,
      }
      }*/
     for (i = 0; i < sizeof(listOfPublish) / sizeof(listOfPublish[0]); i++)
-        pkg_free(listOfPublish[i]);
-    pkg_free(listOfPublish);
+        free(listOfPublish[i]);
+    free(listOfPublish);
     return 1;
 }
 
