@@ -7,15 +7,16 @@
 #include "RedisDBUtils.h"
 #include "notify.h"
 #include "../../socket_info.h"
-int avail_pub=0;
-pres_ev_t event = {.name.s = "presence", .name.len = 8, .content_type.s = "application/pidf+xml", .content_type.len = strlen(
-        "application/pidf+xml")};
+int avail_pub=1;
+//pres_ev_t event = {.name.s = "presence", .name.len = 8, .content_type.s = "application/pidf+xml", .content_type.len = strlen(
+  //      "application/pidf+xml")};
+
 
 void handlePublishMsg(const char *msg)
 {
+
     // msg == sip:a@y.com:bodyXML
     //LM_DBG("Received msg: %s\n", msg);
-
     int count = 4; // skip sip:
     while (msg[count] != ':') {
         count++;
@@ -101,7 +102,7 @@ void sendSubscribeNotify(const char **msg)
     root = cJSON_Parse(*msg);
 
     parseSubscription(&subs, &root);
-    subs.event = &event;
+    subs.event = EvList->events;
 /*
     LM_DBG("-------------------------------------\n");
     LM_DBG("callid  %d, %s\n", subs.callid.len, subs.callid.s);
@@ -143,8 +144,8 @@ void sendPublishNotify(const char **key, char *pres_uri, char *etag)
     body.s = *key;
     body.len = strlen(*key);
 
-    presentity.sender = &sender;
-    presentity.event = &event;
+    //presentity.sender = &sender;
+    presentity.event = EvList->events;
 
     if (publ_notify(&presentity, sender, body.s ? &body : 0, NULL, NULL, NULL, 1) < 0) {
         LM_ERR("while sending notify\n");

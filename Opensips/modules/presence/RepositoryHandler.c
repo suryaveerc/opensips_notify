@@ -186,7 +186,7 @@ int getResource(const db_key_t *_k, const db_val_t *_v, const int _n,
         //pkg_free(url);
         return -1;
     }
-   // LM_DBG("!!!!!%s", url);
+//    LM_DBG("!!!!!%s\n", url);
     int status = 0;
     struct json_response re;
     struct json_response *jresponse = &re;

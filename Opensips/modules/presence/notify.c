@@ -45,6 +45,7 @@
 #include "Util.h"
 #include "RepositoryHandler.h"
 #include "RedisDBUtils.h"
+#include "../../db/db_val.h"
 
 #define MAX_FORWARD 70
 
@@ -1042,7 +1043,10 @@ get_p_notify_body(str pres_uri, pres_ev_t *event, str *etag, str *publ_body, str
         }*/
         n = result->n;
 
-        if (event->agg_nbody == NULL) {
+
+        LM_DBG("Count: %d\n",n);
+        //if (event->agg_nbody == NULL) {
+        if (n==1) {
             LM_DBG("Event does not require aggregation\n");
             row = &result->rows[n - 1];
             row_vals = ROW_VALUES(row);
@@ -1142,12 +1146,16 @@ get_p_notify_body(str pres_uri, pres_ev_t *event, str *etag, str *publ_body, str
             }
         }
         else {
-            //LM_DBG("IN ELSE ELSE, ");
+            LM_DBG("NULL Etag \n");
             for (i = 0; i < n; i++) {
+                LM_DBG("Reading %d publish record\n",i);
                 row = &result->rows[i];
                 row_vals = ROW_VALUES(row);
 
-                if (row_vals[extra_hdrs_col].val.string_val != NULL) {
+                //if (row_vals[extra_hdrs_col].val.string_val != NULL) {
+                LM_DBG("Processing extra_hdrs\n");
+                if (row_vals[extra_hdrs_col].nul != 1) {
+                    LM_DBG("Extra Hdrs not null. Column is %d. Value is %d.\n",extra_hdrs_col, row_vals[extra_hdrs_col].nul);
                     if (extra_hdrs && !extra_hdrs->s) {
                         len = strlen(row_vals[extra_hdrs_col].val.string_val);
                         extra_hdrs->s = (char *) pkg_malloc(len);
@@ -1158,9 +1166,10 @@ get_p_notify_body(str pres_uri, pres_ev_t *event, str *etag, str *publ_body, str
                         extra_hdrs->len = len;
                     }
                 }
-
+                LM_DBG("Processing body\n");
                 len = strlen((char *) row_vals[body_col].val.string_val);
                 if (len == 0) {
+                    LM_DBG("Body is blank.\n");
                     if (event->mandatory_body)
                         LM_ERR("Empty notify body record\n");
                     goto error;
@@ -1174,6 +1183,7 @@ get_p_notify_body(str pres_uri, pres_ev_t *event, str *etag, str *publ_body, str
                 memset(body, 0, size);
                 size = sizeof(str);
                 body->s = (char *) body + size;
+                LM_DBG("Body: %s\n",row_vals[body_col].val.string_val);
                 memcpy(body->s, row_vals[body_col].val.string_val, len);
                 body->len = len;
 
@@ -1183,37 +1193,39 @@ get_p_notify_body(str pres_uri, pres_ev_t *event, str *etag, str *publ_body, str
 
         free_result(result);
 		result= NULL;
-
+        LM_DBG("Done reading bodies.\n");
         /* put the dialog info extracted body if present */
         if (dialog_body) {
             body_array[body_cnt++] = dialog_body;
         }
 
         /* if the Publish with expires=0 has body -> use this one */
-        if (etag && publ_body && build_off_n >= 0) {
+
+        /*if (etag && publ_body && build_off_n >= 0) {
+            LM_DBG("In publish expires.\n");
             pkg_free(body_array[build_off_n]);
             body_array[build_off_n] = publ_body;
             build_off_n = -1;
-        }
+        }*/
 
         /* RFC 4235 states that a NOTIFY generated after an initial
          * or refreshed SUBSCRIBE request must contain a full-state notification.
          * In other cases, only the modified state should be notified using
          * a partial state notification.
          */
-        if (event->evp->parsed == EVENT_DIALOG && from_publish && publ_body) {
-
-            /* Presence dialoginfo knows that special n value of -2 means we publish
+        /*if (event->evp->parsed == EVENT_DIALOG && from_publish && publ_body) {
+        LM_DBG("In EBENT_DIALOG\n");
+            *//* Presence dialoginfo knows that special n value of -2 means we publish
              * a partial state. Calling the agg_nbody method is however required because
              * it builds the full NOTIFY body as described in the RFC (it adds the version
              * field to the body, defines if state is partial or full, ...).
-             */
+             *//*
             notify_body = event->agg_nbody(&uri.user, &uri.host, &publ_body, -2, build_off_n);
             if (notify_body) {
                 goto done;
             }
-        }
-
+        }*/
+        LM_DBG("Just before agg_body\n");
         notify_body = event->agg_nbody(&uri.user, &uri.host, body_array, body_cnt, build_off_n);
         if (notify_body == NULL) {
             LM_ERR("Failed to aggregate notify body\n");
@@ -1333,6 +1345,7 @@ dlg_t *build_dlg_t(subs_t *subs)
 
 int get_subs_db(str *pres_uri, pres_ev_t *event, str *sender, subs_t **s_array, int *n)
 {
+
 //	static db_ps_t my_ps = NULL;
     db_key_t query_cols[7];
 //	db_op_t  query_ops[7];
@@ -1456,7 +1469,7 @@ int get_subs_db(str *pres_uri, pres_ev_t *event, str *sender, subs_t **s_array, 
         */free_result(result);
         return 0;
     }
-    //LM_DBG("found %d dialogs\n", result->n);
+    LM_DBG("found %d dialogs\n", result->n);
     int count = result->n;
     //LM_DBG("^^^^^^^^^^^^^^^^^^^^^^^^%d\n\n\n",count);
     for (i = 0; i < count; i++) {

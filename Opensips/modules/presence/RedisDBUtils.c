@@ -8,14 +8,14 @@
 #include <stdio.h>
 #include "RedisDBUtils.h"
 #include "Common.h"
-#include "../../ut.h"
 #include "../../socket_info.h"
 #include "Util.h"
 
 redisContext *redis_context;
 int redisCounter = 0;
 
-int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
+int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response)
+{
 
     redisReply *reply;
 
@@ -46,12 +46,10 @@ int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
 
 
     //add in pipeline
-    redisAppendCommand(redis_context, "SADD %s %s", subs_cache_key,
-                       subs_cache_value);
+    redisAppendCommand(redis_context, "SADD %s %s", subs_cache_key, subs_cache_value);
     //LM_INFO("Redis set counter: %d", ++redisCounter);
     //set expires
-    redisAppendCommand(redis_context, "EXPIRE %s %d", subs_cache_key,
-                       subs->expires);
+    redisAppendCommand(redis_context, "EXPIRE %s %d", subs_cache_key, subs->expires);
     //LM_INFO("Redis set counter: %d", ++redisCounter);
 
     // create hash for to_tag:call_id
@@ -97,7 +95,8 @@ int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
         argvlen[argc] = subs->reason.len;
 
         argc++;
-    } else {
+    }
+    else {
         arvg[argc] = '\0';
         argvlen[argc] = 0;
 
@@ -113,7 +112,8 @@ int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
         argvlen[argc] = subs->event_id.len;
 
         argc++;
-    } else {
+    }
+    else {
         arvg[argc] = '\0';
         argvlen[argc] = 0;
 
@@ -127,7 +127,7 @@ int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
     char local_cseq[10];
     int l = 0;
     l = snprintf(local_cseq, 10, "%d", subs->local_cseq);
-    arvg[argc] =local_cseq;
+    arvg[argc] = local_cseq;
     //arvg[argc] = my_itoa_len(subs->local_cseq, &l);;
     argvlen[argc] = l;
 
@@ -138,8 +138,8 @@ int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
 
     argc++;
 
-	char remote_cseq[10];
-	l = snprintf(remote_cseq, 10, "%d", subs->remote_cseq);
+    char remote_cseq[10];
+    l = snprintf(remote_cseq, 10, "%d", subs->remote_cseq);
     arvg[argc] = remote_cseq;
     //arvg[argc] = my_itoa_len(subs->remote_cseq, &l);
     argvlen[argc] = l;
@@ -151,8 +151,8 @@ int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
 
     argc++;
 
-	char status[10];
-	l = snprintf(status, 10, "%d", subs->status);
+    char status[10];
+    l = snprintf(status, 10, "%d", subs->status);
 
     arvg[argc] = status;
 //    arvg[argc] = my_itoa_len(subs->status, &l);
@@ -165,8 +165,8 @@ int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
 
     argc++;
 
-	char version[10];
-	l = snprintf(version, 10, "%d", subs->version);
+    char version[10];
+    l = snprintf(version, 10, "%d", subs->version);
 
     arvg[argc] = version;
 //    arvg[argc] = my_itoa_len(subs->version, &l);
@@ -179,8 +179,8 @@ int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
 
     argc++;
 
-	char expires[10];
-	l = snprintf(expires, 10, "%d", subs->expires);
+    char expires[10];
+    l = snprintf(expires, 10, "%d", subs->expires);
     arvg[argc] = expires;
 //    arvg[argc] = my_itoa_len(subs->expires, &l);
     argvlen[argc] = l;
@@ -206,7 +206,8 @@ int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
     if (subs->sockinfo) {
         arvg[argc] = subs->sockinfo->sock_str.s;
         argvlen[argc] = subs->sockinfo->sock_str.len;
-    } else {
+    }
+    else {
         arvg[argc] = 0;
         argvlen[argc] = 0;
     }
@@ -214,8 +215,7 @@ int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
     //add in pipeline
     redisAppendCommandArgv(redis_context, argc, arvg, argvlen);
     //LM_INFO("Redis set counter: %d", ++redisCounter);
-    redisAppendCommand(redis_context, "EXPIRE %s %d", subs_cache_value,
-                       subs->expires);
+    redisAppendCommand(redis_context, "EXPIRE %s %d", subs_cache_value, subs->expires);
     //LM_INFO("Redis set counter: %d", ++redisCounter);
     if (read_response) {
 
@@ -240,22 +240,22 @@ int addSubscriptionInCache(subs_t *subs, str *pres_uri, int read_response) {
     } //else
     //LM_DBG("Skipped reading response.\n");
 
-        //LM_DBG("Insert in Cache complete.\n");
+    //LM_DBG("Insert in Cache complete.\n");
     return 1;
 }
 
-int addPresentityInCache(presentity_t *presentity, str *pres_uri,
-                         str *pres_cache_key, str *pres_cache_value, int read_response) {
+int addPresentityInCache(presentity_t *presentity, str *pres_uri, str *pres_cache_key, str *pres_cache_value,
+                         int read_response)
+{
 
     redisReply *reply;
 
     //add in pipeline, set sorted by received time (ASC)
-    redisAppendCommand(redis_context, "ZADD %s %d %s", pres_cache_key->s,
-                       presentity->received_time, pres_cache_value->s);
+    redisAppendCommand(redis_context, "ZADD %s %d %s", pres_cache_key->s, presentity->received_time,
+                       pres_cache_value->s);
     //set expires
 //	LM_INFO("Redis set counter: %d", ++redisCounter);
-    redisAppendCommand(redis_context, "EXPIRE %s %d", pres_cache_key->s,
-                       presentity->expires);
+    redisAppendCommand(redis_context, "EXPIRE %s %d", pres_cache_key->s, presentity->expires);
 //	LM_INFO("Redis set counter: %d", ++redisCounter);
     // create hash for presentity:event:etag
     int argc = 6; //HMSET <hashname> <body> <value>
@@ -292,7 +292,8 @@ int addPresentityInCache(presentity_t *presentity, str *pres_uri,
         arvg[argc] = presentity->extra_hdrs->s;
         argvlen[argc] = presentity->extra_hdrs->len;
         argc++;
-    } else {
+    }
+    else {
         arvg[argc] = '\0';
         argvlen[argc] = 0;
         argc++;
@@ -301,8 +302,7 @@ int addPresentityInCache(presentity_t *presentity, str *pres_uri,
     //add in pipeline
     redisAppendCommandArgv(redis_context, argc, arvg, argvlen);
 //	LM_INFO("Redis set counter: %d", ++redisCounter);
-    redisAppendCommand(redis_context, "EXPIRE %s %d", pres_cache_value->s,
-                       presentity->expires);
+    redisAppendCommand(redis_context, "EXPIRE %s %d", pres_cache_value->s, presentity->expires);
 //	LM_INFO("Redis set counter: %d", ++redisCounter);
     if (read_response) {
         redisGetReply(redis_context, &reply); // reply for SET
@@ -328,8 +328,8 @@ int addPresentityInCache(presentity_t *presentity, str *pres_uri,
     return 1;
 }
 
-int checkPresentityInCache(char *pres_cache_key, char *pres_cache_value,
-                           int fetch_values, char ***listOfPublish) {
+int checkPresentityInCache(char *pres_cache_key, char *pres_cache_value, int fetch_values, char ***listOfPublish)
+{
     redisReply *reply;
 //	LM_DBG("In checkPresentityInCache 1\n");
 //	LM_DBG("\n\n\n!!!!!!-%s-\n\n\n", pres_cache_key);
@@ -343,7 +343,8 @@ int checkPresentityInCache(char *pres_cache_key, char *pres_cache_value,
             LM_ERR("Error: %s\n", reply->str);
             freeReplyObject(reply);
             return -1;
-        } else {
+        }
+        else {
             //LM_DBG("In checkPresentityInCache 3\n");
             int i;
             int count = 0;
@@ -356,15 +357,15 @@ int checkPresentityInCache(char *pres_cache_key, char *pres_cache_value,
                     LM_ERR("NO more pkg memory left.\n");
                     return -1;
                 }
-            } else {
+            }
+            else {
                 //	LM_DBG("Nothing found in cache.\n");
                 return 0;
             }
             //LM_DBG("In checkPresentityInCache 4\n");
             for (i = 0; i < reply->elements; i++) {
 //				LM_DBG("Result: %s\n", reply->element[i]->str);
-                (*listOfPublish)[i] = malloc(
-                        strlen(reply->element[i]->str) * sizeof(char) + 1);
+                (*listOfPublish)[i] = malloc(strlen(reply->element[i]->str) * sizeof(char) + 1);
                 if ((*listOfPublish)[i] == NULL) {
                     LM_ERR("NO more pkg memory left.\n");
                     return -1;
@@ -377,10 +378,10 @@ int checkPresentityInCache(char *pres_cache_key, char *pres_cache_value,
             return count;
         }
 
-    } else {
+    }
+    else {
 //		LM_DBG("Searching in cache for *%s* *%s*", pres_cache_key,				pres_cache_value);
-        reply = redisCommand(redis_context, "ZSCORE %s %s", pres_cache_key,
-                             pres_cache_value);
+        reply = redisCommand(redis_context, "ZSCORE %s %s", pres_cache_key, pres_cache_value);
         //LM_INFO("Redis set counter: %d", ++redisCounter);
         //LM_INFO("Redis unset counter: %d", --redisCounter);
         //	LM_DBG("\n\n\n%s\n\n\n\n", reply->str);
@@ -390,7 +391,8 @@ int checkPresentityInCache(char *pres_cache_key, char *pres_cache_value,
             //LM_DBG("NOT FOUND");
             freeReplyObject(reply);
             return 0;
-        } else {
+        }
+        else {
             //int found = atoi(reply->str);
             //LM_DBG("FOUND");
             freeReplyObject(reply);
@@ -402,13 +404,12 @@ int checkPresentityInCache(char *pres_cache_key, char *pres_cache_value,
 
 }
 
-void deletePresentityFromCache(str *pres_set_key, str *pres_hash_key,
-                               int read_response) {
+void deletePresentityFromCache(str *pres_set_key, str *pres_hash_key, int read_response)
+{
     redisReply *reply;
     //LM_DBG("DELETING KEY:%s\n", pres_set_key->s);
     //LM_DBG("DELETING VALUE:%s\n", pres_hash_key->s);
-    redisAppendCommand(redis_context, "ZREM %s %s", pres_set_key->s,
-                       pres_hash_key->s);
+    redisAppendCommand(redis_context, "ZREM %s %s", pres_set_key->s, pres_hash_key->s);
     //LM_INFO("Redis set counter: %d", ++redisCounter);
 
     redisAppendCommand(redis_context, "DEL %s", pres_hash_key->s);
@@ -425,8 +426,9 @@ void deletePresentityFromCache(str *pres_set_key, str *pres_hash_key,
     //LM_DBG("Skipped readign response.\n");
 }
 
-int updatePresentityInCache(presentity_t *presentity, str *pres_cache_key,
-                            str *pres_cache_value, str *pres_uri, str *new_etag) {
+int updatePresentityInCache(presentity_t *presentity, str *pres_cache_key, str *pres_cache_value, str *pres_uri,
+                            str *new_etag)
+{
     redisReply *reply;
     if (!new_etag) {
         LM_ERR("No etag found to create new record.\n");
@@ -436,15 +438,13 @@ int updatePresentityInCache(presentity_t *presentity, str *pres_cache_key,
     //LM_DBG("UPDATING SET:%s\n", pres_cache_key->s);
     //LM_DBG("UPDATING VALUE:%s\n", pres_cache_value->s);
 
-    deletePresentityFromCache(pres_cache_key, pres_cache_value,
-                              NO_READ_RESPONSE);
-    if (generatePresentitySetNameValue(presentity, pres_cache_key,
-                                       pres_cache_value, pres_uri, new_etag, !GENERATE_KEY) < 0) {
+    deletePresentityFromCache(pres_cache_key, pres_cache_value, NO_READ_RESPONSE);
+    if (generatePresentitySetNameValue(presentity, pres_cache_key, pres_cache_value, pres_uri, new_etag,
+                                       !GENERATE_KEY) < 0) {
         LM_ERR("Creating KV pair for presentity.\n");
         return -1;
     }
-    addPresentityInCache(presentity, pres_uri, pres_cache_key, pres_cache_value,
-                         NO_READ_RESPONSE);
+    addPresentityInCache(presentity, pres_uri, pres_cache_key, pres_cache_value, NO_READ_RESPONSE);
     // replies from delete
     redisGetReply(redis_context, &reply); // reply for ZREM
     //LM_INFO("Redis unset counter: %d", --redisCounter);
@@ -472,25 +472,26 @@ int updatePresentityInCache(presentity_t *presentity, str *pres_cache_key,
     return status;
 }
 
-int fetchPresentityFromCache(char *pres_cache_key, int *body_col,
-                             int *extra_hdrs_col, int *expires_col, int *etag_col, db_res_t **result) {
+int fetchPresentityFromCache(char *pres_cache_key, int *body_col, int *extra_hdrs_col, int *expires_col, int *etag_col,
+                             db_res_t **result)
+{
 
     //LM_DBG("In fetchPresentityFromCache\n");
     //db_res_t* result = NULL;
     redisReply *reply;
     char **listOfPublish;
     int publish_count = 0;
-    publish_count = checkPresentityInCache(pres_cache_key, NULL, FETCH_VALUES,
-                                           &listOfPublish);
+    publish_count = checkPresentityInCache(pres_cache_key, NULL, FETCH_VALUES, &listOfPublish);
     if (publish_count < 0) {
         LM_ERR("Fetching details from cache. Try database.");
         return -1;
-    } else if (publish_count == 0) {
+    }
+    else if (publish_count == 0) {
         //LM_DBG("No records in cache. Try database.");
         return 0;
     }
 
-//	LM_DBG("___________________publish_count.%d\n", publish_count);
+    LM_DBG("___________________publish_count.%d\n", publish_count);
     int i = 0, j = 0;
 
     for (i = 0; i < publish_count; i++) {
@@ -498,7 +499,7 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col,
         redisAppendCommand(redis_context, "HGETALL %s", listOfPublish[i]);
         //LM_INFO("Redis set counter: %d", ++redisCounter);
     }
-    *result = malloc(sizeof(db_res_t));
+    *result = calloc(1,sizeof(db_res_t));
 
     if (!result) {
         LM_ERR("No more memory to assign to result.");
@@ -509,7 +510,7 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col,
     }
 
     (*result)->n = publish_count;
-    (*result)->rows = malloc(sizeof(db_row_t) * publish_count);
+    (*result)->rows = calloc(publish_count,sizeof(db_row_t));
 
     if (!(*result)->rows) {
         LM_ERR("No more memory to assign to (*result)->rows.");
@@ -530,7 +531,8 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col,
             LM_ERR("Error: %s\n", reply->str);
             freeReplyObject(reply);
             return -1;
-        } else {
+        }
+        else {
             char *temp = listOfPublish[i] + strlen(listOfPublish[i]);
             while (*temp != ':') {
                 temp--;
@@ -538,14 +540,14 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col,
             temp++;
             //LM_DBG("%s\n", temp); //fetched etag from the key.
             (*result)->rows[i].n = 4; //actual returned will be 2 or 1 but this is done to match the expected result in the calling function. Work around!!
-            (*result)->rows[i].values = malloc(sizeof(db_val_t) * 4);
+            (*result)->rows[i].values = calloc(4,sizeof(db_val_t));
 
             // 0- etag, 1-expires, 2-body, 3-extra_hdrs
 
             int customindex = 0;
             // assign etag
             (*result)->rows[i].values[customindex].type = DB_STR;
-//			(*result)->rows[i].values[customindex].nul = 0;
+			(*result)->rows[i].values[customindex].nul = 0;
             (*result)->rows[i].values[customindex].val.str_val.s = strdup(temp);
             customindex++;
             // assign expires
@@ -555,70 +557,70 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col,
             //customindex++;
             //LM_DBG("Key value pair count:%d\n", reply->elements / 2);
             for (j = 1; j < reply->elements; j += 2) { // read only odd values. evens contains key names.
-                //LM_DBG("KEY returned [%d]:%s\n", j - 1,reply->element[j - 1]->str);
-                //LM_DBG("VALUE returned [%d]:%s\n", j, reply->element[j]->str);
+                LM_DBG("KEY returned [%d]:%s\n", j - 1,reply->element[j - 1]->str);
+                LM_DBG("VALUE returned [%d]:%s\n", j, reply->element[j]->str);
 
                 if (strcmp("body", reply->element[j - 1]->str) == 0) {
                     customindex = *body_col;
-                } else {
+                }
+                else {
                     customindex = *extra_hdrs_col;
                 }
                 (*result)->rows[i].values[customindex].type = DB_STR;
-                if (reply->element[j]->str) {
-//					(*result)->rows[i].values[customindex].nul = 0;
-                    (*result)->rows[i].values[customindex].val.string_val =
-                            strdup(reply->element[j]->str);
-                    //LM_DBG("!!! %d !!!!!!!!!!!!!!!!!!%s\n", customindex,	(*result)->rows[i].values[customindex].val.string_val);
-                } else {
-//					(*result)->rows[i].values[customindex].nul = 1;
-                    (*result)->rows[i].values[customindex].val.string_val =
-                            NULL;
+                if (reply->element[j]->str && reply->element[j]->len != 0) {
+                    (*result)->rows[i].values[customindex].nul = 0;
+                    (*result)->rows[i].values[customindex].val.string_val = strdup(reply->element[j]->str);
+                    LM_DBG("!!! %d !!!!!!!!!!!!!!!!!!%s\n", customindex,	(*result)->rows[i].values[customindex].val.string_val);
+                }
+                else {
+                    (*result)->rows[i].values[customindex].nul = 1;
+                    (*result)->rows[i].values[customindex].val.string_val = NULL;
                 }
             }
             freeReplyObject(reply);
         }
     }
-    /*LM_DBG("**********VERIFY RESULT*****************");
-     LM_DBG("Count of ROWS:%d\n", (*result)->n);
-     for (i = 0; i < (*result)->n; i++) {
-     LM_DBG("Count of COLUMNS:%d\n", (*result)->rows[i].n);
-     for (j = 0; j < (*result)->rows[i].n; j++) {
-     if ((*result)->rows[i].values[j].type
-     == DB_STR&& (*result)->rows[i].values[j].val.string_val !=NULL)
-     LM_DBG("*****%s\n",
-     (*result)->rows[i].values[j].val.string_val);
-     else
-     LM_DBG("*****%d\n", (*result)->rows[i].values[j].val.int_val);
-     }
-     }*/
+    LM_DBG("**********VERIFY RESULT*****************");
+    LM_DBG("Count of ROWS:%d\n", (*result)->n);
+    for (i = 0; i < (*result)->n; i++) {
+        LM_DBG("Count of COLUMNS:%d\n", (*result)->rows[i].n);
+        for (j = 0; j < (*result)->rows[i].n; j++) {
+            if ((*result)->rows[i].values[j].type == DB_STR && (*result)->rows[i].values[j].val.string_val != NULL)
+                LM_DBG("*****%s\n", (*result)->rows[i].values[j].val.string_val);
+            else
+                LM_DBG("*****%d\n", (*result)->rows[i].values[j].val.int_val);
+        }
+    }
     for (i = 0; i < sizeof(listOfPublish) / sizeof(listOfPublish[0]); i++)
         free(listOfPublish[i]);
     free(listOfPublish);
     return 1;
 }
 
-int hasPublication(char **pres_cache_key) {
+int hasPublication(char **pres_cache_key)
+{
     redisReply *reply;
     int ret = 0;
     reply = redisCommand(redis_context, "ZCARD %s", *pres_cache_key);
     if (reply->type == REDIS_REPLY_ERROR) {
         freeReplyObject(reply);
         return -1;
-    } else {
+    }
+    else {
         ret = reply->integer;
         freeReplyObject(reply);
         return ret;
     }
 }
 
-int updateSubscriptionInCache(subs_t *subs, int type) {
+int updateSubscriptionInCache(subs_t *subs, int type)
+{
 
     redisReply *reply;
 
 //	int subs_cache_key_len = SUBSCRIPTION_SET_PREFIX_LEN + subs->event->name.len
 //			+ subs->pres_uri.len + 3; // add 2 for :-, 1 for '\0
-    int subs_cache_value_len = subs->callid.len + subs->from_tag.len
-                               + subs->to_tag.len + 3;
+    int subs_cache_value_len = subs->callid.len + subs->from_tag.len + subs->to_tag.len + 3;
 
     char temp_key[200] = "";
     char *tk = my_strcpy(temp_key, "", 0, 0);
@@ -643,20 +645,19 @@ int updateSubscriptionInCache(subs_t *subs, int type) {
     *tv = '\0';
 
 
- /*   LM_DBG("Search !%s!  !%s!\n", subs_cache_key, subs_cache_value);
-    LM_DBG("1...... %s\n", subs->from_user.s);
-    LM_DBG("2...... %s\n", subs->from_domain.s);
-    LM_DBG("3...... %s\n", subs->to_user.s);
-    LM_DBG("4...... %s\n", subs->to_domain.s);
-    LM_DBG("5...... %s\n", subs->to_tag.s);
-    LM_DBG("6...... %s\n", subs->from_tag.s);
-    LM_DBG("7...... %s\n", subs->callid.s);
-    LM_DBG("8...... %s\n", subs->pres_uri.s);
-    LM_DBG("9...... %s\n", subs->event->name.s);
-    LM_DBG("10...... %d\n", subs->status);*/
+    /*   LM_DBG("Search !%s!  !%s!\n", subs_cache_key, subs_cache_value);
+       LM_DBG("1...... %s\n", subs->from_user.s);
+       LM_DBG("2...... %s\n", subs->from_domain.s);
+       LM_DBG("3...... %s\n", subs->to_user.s);
+       LM_DBG("4...... %s\n", subs->to_domain.s);
+       LM_DBG("5...... %s\n", subs->to_tag.s);
+       LM_DBG("6...... %s\n", subs->from_tag.s);
+       LM_DBG("7...... %s\n", subs->callid.s);
+       LM_DBG("8...... %s\n", subs->pres_uri.s);
+       LM_DBG("9...... %s\n", subs->event->name.s);
+       LM_DBG("10...... %d\n", subs->status);*/
 
-    reply = redisCommand(redis_context, "SISMEMBER %s %s", subs_cache_key,
-                         subs_cache_value);
+    reply = redisCommand(redis_context, "SISMEMBER %s %s", subs_cache_key, subs_cache_value);
     //LM_INFO("Redis set counter: %d", ++redisCounter);
     //LM_INFO("Redis unset counter: %d", --redisCounter);
     if (reply->integer == 0) {
@@ -695,12 +696,12 @@ int updateSubscriptionInCache(subs_t *subs, int type) {
         argvlen[argc] = str_remote_cseq_col.len;
         argc++;
 
-		char remote_cseq[10];
-		l = snprintf(remote_cseq, 10, "%d", subs->remote_cseq);
+        char remote_cseq[10];
+        l = snprintf(remote_cseq, 10, "%d", subs->remote_cseq);
 
 
 //        arvg[argc] = my_itoa_len(subs->remote_cseq, &l);
-		arvg[argc] = remote_cseq;
+        arvg[argc] = remote_cseq;
         argvlen[argc] = l;
         argc++;
 
@@ -708,27 +709,26 @@ int updateSubscriptionInCache(subs_t *subs, int type) {
         argvlen[argc] = str_expires_col.len;
         argc++;
 
-		char expires[10];
-		l = snprintf(expires, 10, "%d", subs->expires + (int) time(NULL));
-		arvg[argc] = expires;
+        char expires[10];
+        l = snprintf(expires, 10, "%d", subs->expires + (int) time(NULL));
+        arvg[argc] = expires;
 
 //        arvg[argc] = my_itoa_len(subs->expires + (int) time(NULL), &l);
         argvlen[argc] = l;
         argc++;
 
-    } else {
+    }
+    else {
         //LM_DBG("LOCAL_TYPE");
 
         redisAppendCommand(redis_context, "MULTI");
 
         //LM_INFO("Redis set counter: %d", ++redisCounter);
 
-        redisAppendCommand(redis_context, "HINCRBY %s %s %d",
-                           subs_cache_value, "local_cseq", 1);
+        redisAppendCommand(redis_context, "HINCRBY %s %s %d", subs_cache_value, "local_cseq", 1);
         //LM_INFO("Redis set counter: %d", ++redisCounter);
 
-        redisAppendCommand(redis_context, "HINCRBY %s %s %d",
-                           subs_cache_value, "version", 1);
+        redisAppendCommand(redis_context, "HINCRBY %s %s %d", subs_cache_value, "version", 1);
         //LM_INFO("Redis set counter: %d", ++redisCounter);
 
     }
@@ -737,9 +737,9 @@ int updateSubscriptionInCache(subs_t *subs, int type) {
     argvlen[argc] = str_status_col.len;
     argc++;
 
-	char status[10];
-	l = snprintf(status, 10, "%d", subs->status);
-	arvg[argc] = status;
+    char status[10];
+    l = snprintf(status, 10, "%d", subs->status);
+    arvg[argc] = status;
 //    l = 0;
 //    arvg[argc] = my_itoa_len(subs->status, &l);
     argvlen[argc] = l;
@@ -784,7 +784,8 @@ int updateSubscriptionInCache(subs_t *subs, int type) {
         //LM_INFO("Redis unset counter: %d", --redisCounter);
         freeReplyObject(reply);
 
-    } else {
+    }
+    else {
         redisGetReply(redis_context, &reply); // reply for HMSET
         //LM_INFO("Redis unset counter: %d", --redisCounter);
         //LM_DBG("Reply from redis: %s\n", reply->str);
@@ -794,11 +795,11 @@ int updateSubscriptionInCache(subs_t *subs, int type) {
     return 1;
 }
 
-int checkSusbcriptionInCache(subs_t *subs) {
+int checkSusbcriptionInCache(subs_t *subs)
+{
     redisReply *reply;
 
-    int subs_cache_value_len = subs->callid.len + subs->from_tag.len
-                               + subs->to_tag.len + 2;
+    int subs_cache_value_len = subs->callid.len + subs->from_tag.len + subs->to_tag.len + 2;
 
     char temp_value[200] = "";
     char *tv = my_strcpy(temp_value, "", 0, 0);
@@ -869,8 +870,7 @@ int checkSusbcriptionInCache(subs_t *subs) {
         int remote_cseq = 0;
         remote_cseq = atoi(reply->element[remote_cseq_col]->str);
         if (subs->remote_cseq <= remote_cseq) {
-            LM_ERR("wrong sequence number received: %d - stored: %d\n",
-                   subs->remote_cseq, remote_cseq);
+            LM_ERR("wrong sequence number received: %d - stored: %d\n", subs->remote_cseq, remote_cseq);
 
             return -1;
         }
@@ -917,7 +917,8 @@ int checkSusbcriptionInCache(subs_t *subs) {
 
 }
 
-int deleteSubscriptionInCache(subs_t *subs) {
+int deleteSubscriptionInCache(subs_t *subs)
+{
     redisReply *reply;
     int cseq = 0;
 
@@ -943,11 +944,9 @@ int deleteSubscriptionInCache(subs_t *subs) {
     tv = my_strcpy(tv, subs->callid.s, 1, subs->callid.len);
     *tv = '\0';
 
-    redisAppendCommand(redis_context, "HGET %s %s", subs_cache_key,
-                       str_local_cseq_col.s);
+    redisAppendCommand(redis_context, "HGET %s %s", subs_cache_key, str_local_cseq_col.s);
     //LM_INFO("Redis set counter: %d", ++redisCounter);
-    redisAppendCommand(redis_context, "SREM %s %s", subs_cache_key,
-                       subs_cache_value);
+    redisAppendCommand(redis_context, "SREM %s %s", subs_cache_key, subs_cache_value);
     //LM_INFO("Redis set counter: %d", ++redisCounter);
     redisAppendCommand(redis_context, "HDEL %s", subs_cache_value);
     //LM_INFO("Redis set counter: %d", ++redisCounter);
@@ -956,7 +955,8 @@ int deleteSubscriptionInCache(subs_t *subs) {
     if (reply->type == REDIS_REPLY_ERROR) {
         LM_ERR("Error: %s\n", reply->str);
         return -1;
-    } else {
+    }
+    else {
         cseq = atoi(reply->str);
         //LM_DBG("Returned LOCAL_CSEQ %d", cseq);
     }
@@ -973,7 +973,8 @@ int deleteSubscriptionInCache(subs_t *subs) {
 }
 
 // this function adds presentity in cache fetched from the SUBS flow.
-int upsertPresentityInCache(char **pres_cache_key, str *pres_uri, str *event, db_res_t **result) {
+int upsertPresentityInCache(char **pres_cache_key, str *pres_uri, str *event, db_res_t **result)
+{
 
     redisReply *reply;
     str pres_cache_value = {NULL, 0};
@@ -994,12 +995,10 @@ int upsertPresentityInCache(char **pres_cache_key, str *pres_uri, str *event, db
         generatePresentityCacheValue(&pres_cache_value, pres_uri, &((*result)->rows[i].values[0].val.string_val),
                                      event);
         //     LM_DBG("pres_cache_value %s %d\n", pres_cache_value.s, pres_cache_value.len);
-        redisAppendCommand(redis_context, "ZADD %s %d %s", *pres_cache_key,
-                           time(NULL), pres_cache_value.s);
+        redisAppendCommand(redis_context, "ZADD %s %d %s", *pres_cache_key, time(NULL), pres_cache_value.s);
         //set expires
         //LM_INFO("Redis set counter: %d", ++redisCounter);
-        redisAppendCommand(redis_context, "EXPIRE %s %d", *pres_cache_key,
-                           (*result)->rows[i].values[1].val.int_val);
+        redisAppendCommand(redis_context, "EXPIRE %s %d", *pres_cache_key, (*result)->rows[i].values[1].val.int_val);
         //LM_INFO("Redis set counter: %d", ++redisCounter);
         // create hash for presentity:event:etag
         int argc = 6; //HMSET <hashname> <body> <value>
@@ -1035,7 +1034,8 @@ int upsertPresentityInCache(char **pres_cache_key, str *pres_uri, str *event, db
             arvg[argc] = (*result)->rows[i].values[3].val.string_val;
             argvlen[argc] = strlen((*result)->rows[i].values[3].val.string_val);
             argc++;
-        } else {
+        }
+        else {
             arvg[argc] = '\0';
             argvlen[argc] = 0;
             argc++;
@@ -1044,8 +1044,7 @@ int upsertPresentityInCache(char **pres_cache_key, str *pres_uri, str *event, db
         //add in pipeline
         redisAppendCommandArgv(redis_context, argc, arvg, argvlen);
         //LM_INFO("Redis set counter: %d", ++redisCounter);
-        redisAppendCommand(redis_context, "EXPIRE %s %d", pres_cache_value.s,
-                           (*result)->rows[i].values[1].val.int_val);
+        redisAppendCommand(redis_context, "EXPIRE %s %d", pres_cache_value.s, (*result)->rows[i].values[1].val.int_val);
         //LM_INFO("Redis set counter: %d", ++redisCounter);
 
         redisGetReply(redis_context, &reply); // reply for SET
@@ -1070,7 +1069,8 @@ int upsertPresentityInCache(char **pres_cache_key, str *pres_uri, str *event, db
 }
 
 // used for NOTIFY from queue.
-int fetchSinglePresentityFromCache(char *pres_cache_key, presentity_t *presentity) {
+int fetchSinglePresentityFromCache(char *pres_cache_key, presentity_t *presentity)
+{
     redisReply *reply;
     //reply = redisCommand(redis_context, "HVALS %s", pres_cache_key);
     reply = redisCommand(redis_context, "HGETALL %s", pres_cache_key);
@@ -1080,20 +1080,23 @@ int fetchSinglePresentityFromCache(char *pres_cache_key, presentity_t *presentit
         LM_ERR("Error: %s\n", reply->str);
         freeReplyObject(reply);
         return -1;
-    } else if (reply->elements == 0) {
+    }
+    else if (reply->elements == 0) {
         LM_DBG("No return value\n");
         return 1;
-    } else {
+    }
+    else {
         /*LM_DBG("\n  Extra_HDRS......   %s \n Len: *******%d**********\n", reply->element[0]->str,reply->element[0]->len);
         LM_DBG("\n  Body......  %s\n Len:*******%d**********\n", reply->element[1]->str,reply->element[1]->len);
 */
 
-        int body_index=0;
-        int header_index=0;
+        int body_index = 0;
+        int header_index = 0;
         if (strcmp("body", reply->element[0]->str) == 0) {
             body_index = 1;
             header_index = 3;
-        } else {
+        }
+        else {
             body_index = 3;
             header_index = 1;
         }
@@ -1208,7 +1211,8 @@ int fetchSubscriberFromCache(char *subs_cache_key, subs_t *subs) {
     return 0;
 }*/
 
-int fetchSubscriberFromCache(char *subs_cache_key, subs_t *subs) {
+int fetchSubscriberFromCache(char *subs_cache_key, subs_t *subs)
+{
     redisReply *reply;
     reply = redisCommand(redis_context, "HGETALL %s", subs_cache_key);
     //reply = redisCommand(redis_context, "HVALS %s", subs_cache_key);
@@ -1221,83 +1225,81 @@ int fetchSubscriberFromCache(char *subs_cache_key, subs_t *subs) {
         LM_ERR("Error: %s\n", reply->str);
         freeReplyObject(reply);
         return -1;
-    } else if (reply->elements == 0) {
+    }
+    else if (reply->elements == 0) {
         LM_DBG("No return value\n");
         return 1;
-    } else {
+    }
+    else {
         //subs =  pkg_malloc(sizeof(subs_t));
         int j = 0;
         char sockinfostr[50];
-        for (j=0;j< reply->elements; j+=2)
-        {
+        for (j = 0; j < reply->elements; j += 2) {
             //LM_DBG("%d, %s:\n ",j, reply->element[j]->str);
             //LM_DBG("%d, %s\n",j+1, reply->element[j+1]->str);
 
 
-            switch (simple_hash(reply->element[j]->str))
-            {
+            switch (simple_hash(reply->element[j]->str)) {
                 case _LOCAL_CONTACT:
-                    
-                    strcpy(subs->local_contact.s, reply->element[j+1]->str);
-                    subs->local_contact.len = reply->element[j+1]->len;
+
+                    strcpy(subs->local_contact.s, reply->element[j + 1]->str);
+                    subs->local_contact.len = reply->element[j + 1]->len;
                     break;
                 case _RECORD_ROUTE:
-                    
-                    strcpy(subs->record_route.s, reply->element[j+1]->str);
-                    subs->record_route.len = reply->element[j+1]->len;
+
+                    strcpy(subs->record_route.s, reply->element[j + 1]->str);
+                    subs->record_route.len = reply->element[j + 1]->len;
                     break;
                 case _REASON:
-                    
-                    strcpy(subs->reason.s, reply->element[j+1]->str);
-                    subs->reason.len = reply->element[j+1]->len;
+
+                    strcpy(subs->reason.s, reply->element[j + 1]->str);
+                    subs->reason.len = reply->element[j + 1]->len;
                     break;
                 case _EVENT_ID:
-                    
-                    strcpy(subs->event_id.s, reply->element[j+1]->str);
-                    subs->event_id.len = reply->element[j+1]->len;
+
+                    strcpy(subs->event_id.s, reply->element[j + 1]->str);
+                    subs->event_id.len = reply->element[j + 1]->len;
                     break;
                 case _LOCAL_CSEQ:
-                    
-                    subs->local_cseq = atoi(reply->element[j+1]->str);
+
+                    subs->local_cseq = atoi(reply->element[j + 1]->str);
                     break;
                 case _REMOTE_CSEQ:
-                    
-                    subs->remote_cseq = atoi(reply->element[j+1]->str);
+
+                    subs->remote_cseq = atoi(reply->element[j + 1]->str);
                     break;
                 case _STATUS:
-                    
-                    subs->status = atoi(reply->element[j+1]->str);
+
+                    subs->status = atoi(reply->element[j + 1]->str);
                     break;
                 case _VERSION:
-                    
-                    subs->version = atoi(reply->element[j+1]->str);
+
+                    subs->version = atoi(reply->element[j + 1]->str);
                     break;
                 case _EXPIRES:
-                    
-                    subs->expires = atoi(reply->element[j+1]->str);
+
+                    subs->expires = atoi(reply->element[j + 1]->str);
                     break;
                 case _CONTACT:
-                    
-                    strcpy(subs->contact.s, reply->element[j+1]->str);
-                    subs->contact.len = reply->element[j+1]->len;
+
+                    strcpy(subs->contact.s, reply->element[j + 1]->str);
+                    subs->contact.len = reply->element[j + 1]->len;
                     break;
                 case _SOCKET_INFO:
-                    
+
                     //sockinfo_str.s = pkg_malloc(sizeof(char) * reply->element[j+1]->len);
                     sockinfo_str.s = sockinfostr;
-                    strcpy(sockinfo_str.s, reply->element[j+1]->str);
+                    strcpy(sockinfo_str.s, reply->element[j + 1]->str);
 
                     if (sockinfo_str.s) {
                         sockinfo_str.len = strlen(sockinfo_str.s);
 
-                        if (parse_phostport(sockinfo_str.s, sockinfo_str.len, &host.s,
-                                            &host.len, &port, &proto) < 0) {
+                        if (parse_phostport(sockinfo_str.s, sockinfo_str.len, &host.s, &host.len, &port, &proto) < 0) {
                             LM_ERR("bad format for stored sockinfo string\n");
                             return -1;
                         }
 
-                        subs->sockinfo = grep_sock_info(&host, (unsigned short) port,
-                                                        (unsigned short) proto);
+                        subs->sockinfo = grep_sock_info(&host, (unsigned short) port, (unsigned short) proto);
                     }
                     break;
                 default:
