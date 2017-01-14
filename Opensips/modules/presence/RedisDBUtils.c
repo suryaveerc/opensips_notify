@@ -580,7 +580,7 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col, int *extra_hdr
             freeReplyObject(reply);
         }
     }
-    LM_DBG("**********VERIFY RESULT*****************");
+/*    LM_DBG("**********VERIFY RESULT*****************");
     LM_DBG("Count of ROWS:%d\n", (*result)->n);
     for (i = 0; i < (*result)->n; i++) {
         LM_DBG("Count of COLUMNS:%d\n", (*result)->rows[i].n);
@@ -590,7 +590,7 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col, int *extra_hdr
             else
                 LM_DBG("*****%d\n", (*result)->rows[i].values[j].val.int_val);
         }
-    }
+    } */
     for (i = 0; i < sizeof(listOfPublish) / sizeof(listOfPublish[0]); i++)
         free(listOfPublish[i]);
     free(listOfPublish);

@@ -76,12 +76,12 @@ int parse_json_to_result(char *json, db_res_t** result) {
 			//	LM_DBG("%s\n", str_val);
 				(*result)->rows[i].values[j].type = DB_STRING;
 				if (strcmp(str_val, "") == 0) {
-//					(*result)->rows[i].values[j].nul = 1;
+					(*result)->rows[i].values[j].nul = 1;
 //					(*result)->rows[i].values[j].free = 0;
 					(*result)->rows[i].values[j++].val.string_val = NULL;
 	//				LM_DBG("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n");
 				} else {
-//					(*result)->rows[i].values[j].nul = 0;
+					(*result)->rows[i].values[j].nul = 0;
 //					(*result)->rows[i].values[j].free = 1;
 					(*result)->rows[i].values[j++].val.string_val = strdup(
 							str_val);
