@@ -499,7 +499,7 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col, int *extra_hdr
         redisAppendCommand(redis_context, "HGETALL %s", listOfPublish[i]);
         //LM_INFO("Redis set counter: %d", ++redisCounter);
     }
-    *result = calloc(1,sizeof(db_res_t));
+    *result = malloc(sizeof(db_res_t));
 
     if (!result) {
         LM_ERR("No more memory to assign to result.");
@@ -510,7 +510,7 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col, int *extra_hdr
     }
 
     (*result)->n = publish_count;
-    (*result)->rows = calloc(publish_count,sizeof(db_row_t));
+    (*result)->rows = malloc(publish_count * sizeof(db_row_t));
 
     if (!(*result)->rows) {
         LM_ERR("No more memory to assign to (*result)->rows.");
@@ -540,7 +540,7 @@ int fetchPresentityFromCache(char *pres_cache_key, int *body_col, int *extra_hdr
             temp++;
             //LM_DBG("%s\n", temp); //fetched etag from the key.
             (*result)->rows[i].n = 4; //actual returned will be 2 or 1 but this is done to match the expected result in the calling function. Work around!!
-            (*result)->rows[i].values = calloc(4,sizeof(db_val_t));
+            (*result)->rows[i].values = malloc(4 * sizeof(db_val_t));
 
             // 0- etag, 1-expires, 2-body, 3-extra_hdrs
 
